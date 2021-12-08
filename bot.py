@@ -218,12 +218,13 @@ def lifeportal():
 #               Main Process
 #
 ###################################################
-create_table()
-starttime = time.time()
-while True:
-    jadePortal()
-    lifeportal()
-    time.sleep(300.0 - ((time.time() - starttime) % 300.0))
+if __name__ == '__main__':
+    create_table()
+    starttime = time.time()
+    while True:
+        jadePortal()
+        lifeportal()
+        time.sleep(300.0 - ((time.time() - starttime) % 300.0))
 
 # truncate_table()
 
