@@ -133,6 +133,7 @@ def jadePortal():
     options = webdriver.ChromeOptions()
     options.page_load_strategy = 'normal'
     options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--headless")
     driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),chrome_options=options)
 
@@ -173,6 +174,7 @@ def lifeportal():
     options = webdriver.ChromeOptions()
     options.page_load_strategy = 'normal'
     options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--headless")
     options.add_argument("--window-size=1366, 768")
     # assert options.headless 
