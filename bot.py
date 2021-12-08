@@ -134,7 +134,7 @@ def jadePortal():
     options.page_load_strategy = 'normal'
     options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     options.add_argument("--headless")
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),options=options)
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"),chrome_options=options)
 
     driver.get("https://jadeprotocol.io/#/bonds")
     time.sleep(5)
