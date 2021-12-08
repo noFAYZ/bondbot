@@ -5,7 +5,6 @@ import urllib
 from selenium.common.exceptions import NoSuchElementException   
 import time
 import sqlite3
-
 import os
 
 
