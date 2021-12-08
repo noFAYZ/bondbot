@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 import time
 import sqlite3
 from sqlite3 import Error
+import sched
 
 ##################################################
 #
@@ -217,11 +218,15 @@ def lifeportal():
 #               Main Process
 #
 ###################################################
+create_table()
+starttime = time.time()
+while True:
+    jadePortal()
+    lifeportal()
+    time.sleep(300.0 - ((time.time() - starttime) % 300.0))
 
-jadePortal()
 # truncate_table()
-# create_table()
-lifeportal()
+
 
 # b2=BondBot("BaB",230,21312,1221,"http://asuhduah.com/",1)
 # # truncate_table()
