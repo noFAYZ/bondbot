@@ -6,6 +6,18 @@ from selenium.common.exceptions import NoSuchElementException
 import time
 import sqlite3
 import os
+import logging
+
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+# Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
+lthreshold=45.0
+jthreshold=40.0
 
 
 ##################################################
@@ -93,9 +105,63 @@ def print_table():
 #               Update Function
 #
 ####################################################
+
+def start(update, context):
+    """Send a message when the command /start is issued."""
+    update.message.reply_text(f'Hi! {update.message.from_user.first_name}')
+    update.message.reply_text('I will send you updates on the bonds you are interested in!')
+    update.message.reply_text('To get started, type /bondname followed by the minimum threshold of the bond you are interested in!\nLike "/jade 20"')
+    update.message.reply_text('Currently supported bond names are\n(1) /jade\n(2) /life.')
+
+
+
+def help(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('Help!')
+
+def remove_job_if_exists(update,context,name):
+    """Remove job with given name. Returns whether job was removed."""
+    current_jobs = context.job_queue.get_jobs_by_name(name)
+    if not current_jobs:
+        return False
+    for job in current_jobs:
+        job.schedule_removal()
+    return True
+
+def life(update,context):
+    lifet = float(context.args[0])
+    global lthreshold
+    lthreshold=lifet
+    update.message.reply_text('Life Threshold set to {}'.format(lthreshold))
+    context.bot.send_message(chat_id=update.message.chat_id,text='You will get Life Dao updates!')
+    removed=remove_job_if_exists(update,context,'life')
+    context.job_queue.run_repeating(lifeportal, 100,10,"life")
+    print(context.job_queue.jobs())
+
+def jade(update,context):
+    jadet = float(context.args[0])
+    global jthreshold
+    jthreshold=jadet
+    update.message.reply_text('Jade Threshold set to {}'.format(jthreshold))
+    context.bot.send_message(chat_id=update.message.chat_id,text='You will get Jade Dao updates!')
+    removed=remove_job_if_exists(update,context,'jade')
+    context.job_queue.run_repeating(jadePortal, 100,10,name="jade")
+    print(context.job_queue.jobs())
+
+def echo(update, context):
+    """Echo the user message."""
+    update.message.reply_text(update.message.text)
+
+
+def error(update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
+
+
+
 def send_message(text):
     
-    TOKEN="5044795460:AAFBCEoYTR3PtcGu_FKZbK7wlz1kOwi1ZzI"
+    TOKEN="5089353143:AAEoLTXV_hZ4bHoPgqDsEd0rPpSGmWEtV_E"
     URL="https://api.telegram.org/bot{}".format(TOKEN)
     ParsedMessage= urllib.parse.quote_plus(text)
     requests.get(URL+"/sendMessage?chat_id=2129043892&text={}".format(ParsedMessage))
@@ -129,7 +195,7 @@ def check_exists_by_css(elem,clas):
 #
 ###################################################
 
-def jadePortal():
+def jadePortal(context):
     options = webdriver.ChromeOptions()
     options.page_load_strategy = 'normal'
     options.add_argument("--disable-dev-shm-usage")
@@ -159,7 +225,8 @@ def jadePortal():
                 burl=td.find_element_by_xpath("/html/body/div[1]/div/div[2]/div/div/div[3]/div/table/tbody/tr["+str(ro)+"]/td["+str(i+1)+"]/a").get_attribute("href")
             i+=1
         froi=float(broi.replace('%',''))
-        if froi>50.0:
+        print(jthreshold)
+        if froi>jthreshold:
             bond = BondBot(bname, broi, bprice,bhecprice, burl,0)
             add_bond(bond)
             #print(bond.get_bond_text())
@@ -169,7 +236,7 @@ def jadePortal():
          
     driver.close()            
 
-def lifeportal():
+def lifeportal(context):
     options = webdriver.ChromeOptions()
     options.page_load_strategy = 'normal'
     options.add_argument("--disable-dev-shm-usage")
@@ -202,7 +269,8 @@ def lifeportal():
             i+=1
         
         froi=float(broi.replace('%',''))
-        if froi>50.0:
+        print(lthreshold)
+        if froi>lthreshold:
             bond = BondBot(bname, broi, bprice,bhecprice, burl,0)
             add_bond(bond)
             
@@ -213,20 +281,64 @@ def lifeportal():
     driver.close()
 
 
+def jobscheduler(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text='Setting a timer for 1 minute!')
 
+    context.job_queue.run_repeating(lifeportal, 100,first=10)
+    context.job_queue.run_repeating(jadePortal, 100,first=10)
 
 ###################################################
 #
 #               Main Process
 #
 ###################################################
-if __name__ == '__main__':
+
+
+def main():
+    """Start the bot."""
+    # Create the Updater and pass it your bot's token.
+    # Make sure to set use_context=True to use the new context based callbacks
+    # Post version 12 this will no longer be necessary
+    updater = Updater("5089353143:AAEoLTXV_hZ4bHoPgqDsEd0rPpSGmWEtV_E", use_context=True)
+
+    # Get the dispatcher to register handlers
+    dp = updater.dispatcher
+
+    # on different commands - answer in Telegram
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("life", life))
+    dp.add_handler(CommandHandler("jade", jade))
+    dp.add_handler(CommandHandler("chalo", jobscheduler))
+
+    # on noncommand i.e message - echo the message on Telegram
+    dp.add_handler(MessageHandler(Filters.text, echo))
+
+    # log all errors
+    dp.add_error_handler(error)
+
+    # Start the Bot
+    updater.start_polling()
     create_table()
-    starttime = time.time()
-    while True:
-        jadePortal()
-        lifeportal()
-        time.sleep(300.0 - ((time.time() - starttime) % 300.0))
+    # starttime = time.time()
+    # while True:
+    #     #jadePortal()
+    #     lifeportal()
+    #     time.sleep(100.0 - ((time.time() - starttime) % 100.0))
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT. This should be used most of the time, since
+    # start_polling() is non-blocking and will stop the bot gracefully.
+    updater.idle()
+    
+
+
+if __name__ == '__main__':
+    main()
+
+
+
 
 # truncate_table()
 
