@@ -196,11 +196,13 @@ def check_exists_by_css(elem,clas):
 ###################################################
 
 def jadePortal(context):
-    options = webdriver.ChromeOptions()
-    options.page_load_strategy = 'normal'
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--headless")
-    driver = webdriver.Chrome('./chromedriver',options=options)
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    chrome_options.page_load_strategy = 'normal'
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
 
     driver.get("https://jadeprotocol.io/#/bonds")
     time.sleep(5)
@@ -237,13 +239,23 @@ def jadePortal(context):
     driver.close()            
 
 def lifeportal(context):
-    options = webdriver.ChromeOptions()
-    options.page_load_strategy = 'normal'
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--headless")
-    options.add_argument("--window-size=1366, 768")
-    # assert options.headless 
-    driver = webdriver.Chrome('./chromedriver',options=options)
+
+    # options = webdriver.ChromeOptions()
+    # options.page_load_strategy = 'normal'
+    # options.add_argument("--disable-dev-shm-usage")
+    # options.add_argument("--headless")
+    # options.add_argument("--window-size=1366, 768")
+    # # assert options.headless 
+    # driver = webdriver.Chrome('./chromedriver',options=options)
+
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    chrome_options.page_load_strategy = 'normal'
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--window-size=1366, 768")
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
 
     driver.get("https://lifedao.finance/#/mints")
     time.sleep(15)
