@@ -108,10 +108,10 @@ def print_table():
 
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text(f'Hi! {update.message.from_user.first_name}')
+    update.message.reply_text('Hi! 🤑')
     update.message.reply_text('I will send you updates on the bonds you are interested in!')
-    update.message.reply_text('To get started, type /bondname followed by the minimum threshold of the bond you are interested in!\nLike "/jade 20"')
-    update.message.reply_text('Currently supported bond names are\n(1) /jade\n(2) /life.')
+    update.message.reply_text('To get started, type /(bondname) followed with the minimum threshold you want to set! \nLike /life 50')
+    update.message.reply_text('Currently supported bons are \n(1) /jade \n(2) /life')
 
 
 
@@ -135,7 +135,7 @@ def life(update,context):
     update.message.reply_text('Life Threshold set to {}'.format(lthreshold))
     context.bot.send_message(chat_id=update.message.chat_id,text='You will get Life Dao updates!')
     removed=remove_job_if_exists(update,context,'life')
-    context.job_queue.run_repeating(lifeportal, 100,10,"life")
+    context.job_queue.run_repeating(lifeportal, 100,10,name="life")
     print(context.job_queue.jobs())
 
 def jade(update,context):
