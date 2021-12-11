@@ -112,7 +112,7 @@ def start(update, context):
     update.message.reply_text('Hi! 🤑')
     update.message.reply_text('I will send you updates on the bonds you are interested in!')
     update.message.reply_text('To get started, type /(bondname) followed with the minimum threshold you want to set! \nLike /life 50')
-    update.message.reply_text('Currently supported bons are \n(1) /jade \n(2) /life')
+    update.message.reply_text('Currently supported bons are \n(1) /jade \n(2) /life \n(3) /spartacus')
 
 
 
