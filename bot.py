@@ -172,7 +172,7 @@ def error(update, context):
 
 def send_message(text):
     
-    TOKEN="5089353143:AAEoLTXV_hZ4bHoPgqDsEd0rPpSGmWEtV_E"
+    TOKEN="TOKEN"
     URL="https://api.telegram.org/bot{}".format(TOKEN)
     ParsedMessage= urllib.parse.quote_plus(text)
     requests.get(URL+"/sendMessage?chat_id=2129043892&text={}".format(ParsedMessage))
@@ -360,7 +360,7 @@ def main():
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
-    updater = Updater("5089353143:AAEoLTXV_hZ4bHoPgqDsEd0rPpSGmWEtV_E", use_context=True)
+    updater = Updater("TOKEN", use_context=True)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
