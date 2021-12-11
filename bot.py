@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 lthreshold=45.0
 jthreshold=40.0
+sthreshold=15.0
 
 
 ##################################################
@@ -146,6 +147,16 @@ def jade(update,context):
     context.bot.send_message(chat_id=update.message.chat_id,text='You will get Jade Dao updates!')
     removed=remove_job_if_exists(update,context,'jade')
     context.job_queue.run_repeating(jadePortal, 100,10,name="jade")
+    print(context.job_queue.jobs())
+
+def spartacus(update,context):
+    jadet = float(context.args[0])
+    global sthreshold
+    sthreshold=jadet
+    update.message.reply_text('Spartacus Threshold set to {}'.format(sthreshold))
+    context.bot.send_message(chat_id=update.message.chat_id,text='You will get Spartacus updates!')
+    removed=remove_job_if_exists(update,context,'spartacus')
+    context.job_queue.run_repeating(spartacusportal, 100,10,name="spartacus")
     print(context.job_queue.jobs())
 
 def echo(update, context):
@@ -281,12 +292,61 @@ def lifeportal(context):
     driver.close()
 
 
-def jobscheduler(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id,
-                             text='Setting a timer for 1 minute!')
+# def jobscheduler(update, context):
+#     context.bot.send_message(chat_id=update.message.chat_id,
+#                              text='Setting a timer for 1 minute!')
 
-    context.job_queue.run_repeating(lifeportal, 100,first=10)
-    context.job_queue.run_repeating(jadePortal, 100,first=10)
+#     context.job_queue.run_repeating(lifeportal, 100,first=10)
+#     context.job_queue.run_repeating(jadePortal, 100,first=10)
+
+def spartacusportal(context):
+    options = webdriver.ChromeOptions()
+    options.page_load_strategy = 'normal'
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--headless")
+    options.add_argument("--window-size=1366, 768")
+    # assert options.headless 
+    driver = webdriver.Chrome('./chromedriver',options=options)
+
+    driver.get("https://app.spartacus.finance/#/bonds")
+    time.sleep(5)
+    table="//*[@id='choose-bond-view']/div/div[3]/div/table/tbody"
+
+    ro=1
+    co=1
+
+    for row in driver.find_elements_by_xpath(table+"/tr"):
+        cell = row.find_elements_by_tag_name("td")        
+        i=0
+        for td in cell:
+            if i==0:
+                bname=td.find_element_by_xpath(table+"/tr["+str(ro)+"]/td["+str(i+1)+"]/div[2]/p").text
+            elif i==1:
+                bprice=td.find_element_by_xpath(table+"/tr["+str(ro)+"]/td["+str(i+1)+"]/p").text.rstrip()
+            elif i==2:
+                broi=td.find_element_by_xpath(table+"/tr["+str(ro)+"]/td["+str(i+1)+"]").text
+            elif i==3:
+                bhecprice=td.find_element_by_xpath(table+"/tr["+str(ro)+"]/td["+str(i+1)+"]").text
+            elif i==4:
+                burl=td.find_element_by_xpath(table+"/tr["+str(ro)+"]/td["+str(i+1)+"]/a").get_attribute("href")
+            i+=1
+        
+        print(broi)
+        froi=float(broi.replace('%',''))
+        print(froi)
+        print(sthreshold)
+        if froi>sthreshold:
+            bond = BondBot(bname, broi, bprice,bhecprice, burl,0)
+            add_bond(bond)
+            
+            send_message(bond.get_bond_text())
+        # bond = BondBot(bname, broi, bprice,bhecprice, burl)
+        ro+=1
+
+    driver.close()
+
+
+
 
 ###################################################
 #
@@ -310,7 +370,8 @@ def main():
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("life", life))
     dp.add_handler(CommandHandler("jade", jade))
-    dp.add_handler(CommandHandler("chalo", jobscheduler))
+    dp.add_handler(CommandHandler("spartacus", spartacus))
+    # dp.add_handler(CommandHandler("chalo", jobscheduler))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))
